@@ -18,7 +18,7 @@ public class IngredientRepository {
         this.jdbc = jdbc;
     }
 
-    private final RowMapper<Ingredient> ingredientRowMapper = (rs, rowNum) ->
+    final RowMapper<Ingredient> ingredientRowMapper = (rs, rowNum) ->
             new Ingredient(
                     rs.getLong("id"),
                     rs.getString("name"),
@@ -36,7 +36,6 @@ public class IngredientRepository {
     }
 
     public Optional<Stock> getStock(Long id, String at, String unit) {
-        // Logique métier exacte des TD JDBC précédents (somme des mouvements jusqu'à la date)
         String sql = """
             SELECT COALESCE(SUM(quantity), 0) AS value 
             FROM stock_movement 
@@ -46,9 +45,10 @@ public class IngredientRepository {
             """;
 
         try {
-            Timestamp timestamp = Timestamp.valueOf(at);
-            Double value = jdbc.queryForObject(sql, Double.class, id, timestamp, unit);
-            return Optional.of(new Stock(unit, value != null ? value : 0.0));
+            String cleanedAt = at.replace("T", " ");
+            Timestamp timestamp = Timestamp.valueOf(cleanedAt);
+            Double value = jdbc.queryForObject(sql, Double.class, id, timestamp, unit.toUpperCase());
+            return Optional.of(new Stock(unit.toUpperCase(), value != null ? value : 0.0));
         } catch (Exception e) {
             return Optional.empty();
         }

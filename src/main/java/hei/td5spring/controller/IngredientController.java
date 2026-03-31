@@ -24,15 +24,15 @@ public class IngredientController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Ingredient> getIngredientById(@PathVariable Long id) {
+    public ResponseEntity<Object> getIngredientById(@PathVariable Long id) {
         return repository.findById(id)
-                .map(ResponseEntity::ok)
+                .map(ingredient -> ResponseEntity.ok().body(ingredient))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(null)); // le message textuel sera géré par le client ou via exception handler
+                        .body("Ingredient.id=" + id + " is not found"));
     }
 
     @GetMapping("/{id}/stock")
-    public ResponseEntity<?> getStock(
+    public ResponseEntity<Object> getStock(
             @PathVariable Long id,
             @RequestParam(required = false) String at,
             @RequestParam(required = false) String unit) {
