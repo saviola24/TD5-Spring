@@ -4,6 +4,7 @@ package hei.td5spring.controller;
 import hei.td5spring.entity.Dish;
 import hei.td5spring.entity.Ingredient;
 import hei.td5spring.repository.DishRepository;
+import jakarta.annotation.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +26,9 @@ public class DishController {
     }
 
     @PutMapping("/{id}/ingredients")
-    public ResponseEntity<String> updateDishIngredients(
+    public ResponseEntity<Object> updateDishIngredients(
             @PathVariable Long id,
-            @RequestBody(required = false) List<Ingredient> ingredients) {
+            @RequestBody(required = false) @Nullable List<Ingredient> ingredients) {
 
         if (ingredients == null) {
             return ResponseEntity.badRequest()

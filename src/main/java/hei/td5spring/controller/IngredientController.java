@@ -1,55 +1,50 @@
 package hei.td5spring.controller;
 
-
-import hei.td5spring.entity.Ingredient;
-import hei.td5spring.repository.IngredientRepository;
+import hei.td5spring.entity.StockMovement;
+import hei.td5spring.entity.StockMovementCreate;
+import hei.td5spring.repository.StockMovementRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.List;
 
+@Repository
 @RestController
-@RequestMapping("/ingredients")
+@RequestMapping("/ingredients/{id}/stockMovements")
 public class IngredientController {
-    private final IngredientRepository repository;
+    private final StockMovementRepository repository;
 
-    public IngredientController(IngredientRepository repository) {
+    public IngredientController(StockMovementRepository repository) {
         this.repository = repository;
     }
 
     @GetMapping
-    public List<Ingredient> getAllIngredients() {
-        return repository.findAll();
+    public List<StockMovement> getMovements(
+            @PathVariable String id,
+            @RequestParam Instant from,
+            @RequestParam Instant to) {
+
+        if (!ingredientExists(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingredient.id=" + id + " is not found");
+        }
+        return repository.findByIngredientIdAndDateRange(id, from, to);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> getIngredientById(@PathVariable Long id) {
-        return repository.findById(id)
-                .map(ingredient -> ResponseEntity.ok().body(ingredient))
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Ingredient.id=" + id + " is not found"));
+    @PostMapping
+    public List<StockMovement> createMovements(
+            @PathVariable String id,
+            @RequestBody List<StockMovementCreate> movements) {
+
+        if (!ingredientExists(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingredient.id=" + id + " is not found");
+        }
+        return repository.saveAll(id, movements);
     }
 
-    @GetMapping("/{id}/stock")
-    public ResponseEntity<Object> getStock(
-            @PathVariable Long id,
-            @RequestParam(required = false) String at,
-            @RequestParam(required = false) String unit) {
-
-        if (at == null || unit == null) {
-            return ResponseEntity.badRequest()
-                    .body("Either mandatory query parameter `at` or `unit` is not provided.");
-        }
-
-        if (repository.findById(id).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Ingredient.id=" + id + " is not found");
-        }
-
-        return repository.getStock(id, at, unit)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Ingredient.id=" + id + " is not found"));
+    private boolean ingredientExists(String id) {
+        return true;
     }
 }

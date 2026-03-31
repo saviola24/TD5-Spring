@@ -1,0 +1,53 @@
+### Configuration
+@host = http://localhost:8080
+@ingId = ing1
+
+### f) Tester la récupération des mouvements (GET)
+GET {{host}}/ingredients/{{ingId}}/stockMovements?from=2026-03-01T00:00:00Z&to=2026-03-31T23:59:59Z
+Accept: application/json
+
+###
+
+### g) Tester l'ajout de mouvements (POST)
+POST {{host}}/ingredients/{{ingId}}/stockMovements
+Content-Type: application/json
+
+[
+  {
+    "unit": "KG",
+    "value": 12.5,
+    "type": "entrée"
+  },
+  {
+    "unit": "L",
+    "value": 2.0,
+    "type": "sortie"
+  },
+  {
+    "unit": "PCS",
+    "value": 50.0,
+    "type": "entrée"
+  }
+]
+
+###
+
+### Tester l'erreur 404 - Ingrédient inexistant (GET)
+# Doit retourner 404 et "Ingredient.id=999 is not found" [cite: 18]
+GET {{host}}/ingredients/999/stockMovements?from=2026-03-01T00:00:00Z&to=2026-03-31T23:59:59Z
+Accept: application/json
+
+###
+
+### Tester l'erreur 404 - Ingrédient inexistant (POST)
+# Doit retourner 404 et "Ingredient.id=non-existant is not found" [cite: 23]
+POST {{host}}/ingredients/non-existant/stockMovements
+Content-Type: application/json
+
+[
+  {
+    "unit": "PCS",
+    "value": 1.0,
+    "type": "sortie"
+  }
+]
